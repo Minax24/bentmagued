@@ -227,10 +227,12 @@
           // She tried pressing "NO" first
           reactionImg.src = yesAfterNoGifSrc;
           reactionTitle.innerText = "Aiwa kda et3dli";
+          reactionTitle.style.fontSize = "1.8rem";
         } else {
           // She pressed "YES" directly without pressing "NO"
           reactionImg.src = yesDirectImgSrc;
           reactionTitle.innerText = "Anty 7ad zo2 w mo7tram";
+          reactionTitle.style.fontSize = "1.35rem";
         }
       }
 
@@ -247,10 +249,10 @@
 
     const messages = [
       "Ehh al waka7a di",                       // 0
-      "Hagblek shawerma",              // 1
+      "Hagblek shawerma",                       // 1
       "Tab bake rolz bl shata?",                // 2
       "Anty alilt el adb w matrbtish",          // 3
-      "Tab fakri tany ma ahna a3deen aho",       // 4
+      "Tab ma tfakri tany ma ahna a3deen aho",       // 4
       "Anty mosamema ya3ni?",                     // 5
       "Tab aho"                                 // 6
     ];
@@ -273,7 +275,7 @@
 
       // Dynamic Image Swap Logic based on attempt sequence
       if (attemptCount === 4 || attemptCount === 5) {
-        // Keeps image during "Tab ma tfakari tany ahna a3deen 3adi" AND "Anty mosamema ya3ni?"
+        // Keeps image during "Tab fakri tany ma ahna a3deen aho" AND "Anty mosamema ya3ni?"
         memeImg.src = "images (9) (26)(1)(1)(1).jpg";
       } else if (attemptCount >= 6) {
         // "Tab aho"
@@ -288,26 +290,10 @@
         noMsg.innerText = messages[attemptCount];
       }
 
-      // Final step: "Tab aho" -> Keep message in current position, remove NO button, spawn new YES in initial spot
+      // Final step: "Tab aho" -> Hide NO button but leave message visible and keep YES in place
       if (attemptCount === messages.length - 1) {
         setTimeout(() => {
-          // Hide the original No button
           noBtn.style.display = "none";
-
-          // Create a new YES button at the initial slot of the No button
-          const secondYesWrapper = document.createElement('div');
-          secondYesWrapper.className = 'yes-btn-wrapper';
-          secondYesWrapper.style.position = 'absolute';
-          secondYesWrapper.style.left = 'calc(50% + 20px)';
-          secondYesWrapper.style.top = '0';
-
-          const secondYesBtn = document.createElement('button');
-          secondYesBtn.className = 'btn';
-          secondYesBtn.innerText = 'YES ♥';
-          secondYesBtn.onclick = () => nextStep(2);
-
-          secondYesWrapper.appendChild(secondYesBtn);
-          document.getElementById('btn-container').appendChild(secondYesWrapper);
         }, 150);
         return;
       }
