@@ -32,6 +32,7 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      padding: 12px;
       overflow: hidden;
       touch-action: manipulation;
     }
@@ -39,15 +40,15 @@
     /* Goofy Swaying Card Container */
     .card {
       background: var(--card-bg);
-      border-radius: 32px;
-      padding: 32px 24px;
-      width: 90%;
-      max-width: 440px;
+      border-radius: 28px;
+      padding: 24px 16px;
+      width: 100%;
+      max-width: 400px;
       box-shadow: 0 20px 40px rgba(255, 77, 141, 0.15);
       border: 3px solid var(--border-color);
       text-align: center;
       position: relative;
-      min-height: 480px;
+      min-height: 460px;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
@@ -57,7 +58,7 @@
 
     @keyframes floatSway {
       0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-8px) rotate(1deg); }
+      50% { transform: translateY(-6px) rotate(1deg); }
     }
 
     /* Screen Visibility Handling */
@@ -74,16 +75,17 @@
     }
 
     @keyframes popIn {
-      from { opacity: 0; transform: scale(0.8); }
+      from { opacity: 0; transform: scale(0.85); }
       to { opacity: 1; transform: scale(1); }
     }
 
     /* Image Styling */
     .question-img {
       width: 100%;
-      max-width: 250px;
-      border-radius: 20px;
-      margin-bottom: 16px;
+      max-width: 230px;
+      height: auto;
+      border-radius: 18px;
+      margin-bottom: 12px;
       border: 3px solid var(--border-color);
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
       object-fit: cover;
@@ -91,19 +93,13 @@
 
     /* Typography */
     h1 {
-      font-size: 1.7rem;
+      font-size: 1.5rem;
       font-weight: 900;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       color: var(--text-dark);
       line-height: 1.25;
       letter-spacing: -0.5px;
-    }
-
-    p.subtitle {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      font-weight: 700;
-      margin-bottom: 20px;
+      word-wrap: break-word;
     }
 
     /* Buttons */
@@ -111,14 +107,15 @@
       background-color: var(--primary-pink);
       color: white;
       border: none;
-      padding: 14px 36px;
+      padding: 12px 28px;
       border-radius: 50px;
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       font-weight: 800;
       cursor: pointer;
       transition: transform 0.15s ease, background-color 0.15s ease;
       box-shadow: 0 6px 16px rgba(255, 77, 141, 0.4);
       outline: none;
+      white-space: nowrap;
     }
 
     .btn:hover {
@@ -144,13 +141,13 @@
       width: 100%;
       position: relative;
       margin-top: 12px;
-      min-height: 120px;
+      min-height: 110px;
     }
 
-    /* Dedicated slot for YES button so it stays in place */
+    /* Dedicated slot for YES button */
     .yes-btn-wrapper {
       z-index: 10;
-      margin-right: 120px; /* Leaves space for NO button initially */
+      margin-right: 110px;
     }
 
     /* Wrapper for "No" Button + dynamic message below it */
@@ -163,21 +160,25 @@
       top: 0;
       transition: top 0.15s ease, left 0.15s ease;
       z-index: 20;
+      max-width: 90vw;
     }
 
-    /* Clear, readable message styling with black text */
+    /* Clear, readable message styling adapted for small screens */
     .no-message {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 800;
       color: #000000;
       margin-top: 6px;
-      white-space: nowrap;
-      background: rgba(255, 255, 255, 0.95);
-      padding: 4px 12px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 4px 10px;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       pointer-events: none;
       display: none;
+      max-width: 85vw;
+      word-break: break-word;
+      white-space: normal;
     }
   </style>
 </head>
@@ -196,7 +197,7 @@
         </div>
         
         <div class="no-btn-wrapper" id="no-wrapper">
-          <button class="btn btn-secondary" id="no-btn">no ✨</button>
+          <button class="btn btn-secondary" id="no-btn">No</button>
           <div class="no-message" id="no-msg"></div>
         </div>
       </div>
@@ -214,8 +215,8 @@
     let hasPressedNo = false;
 
     // File paths for images
-    const yesDirectImgSrc = "yes_direct.jpeg"; // Image for direct "YES" without pressing "NO"
-    const yesAfterNoGifSrc = "yes_gif.gif";   // GIF for "YES" after pressing "NO"
+    const yesDirectImgSrc = "yes_direct.jpeg"; 
+    const yesAfterNoGifSrc = "yes_gif.gif";   
 
     // Screen Navigation
     function nextStep(stepNumber) {
@@ -224,11 +225,9 @@
         const reactionTitle = document.getElementById('reaction-title');
 
         if (hasPressedNo) {
-          // She tried pressing "NO" first
           reactionImg.src = yesAfterNoGifSrc;
           reactionTitle.innerText = "Aiwa kda et3dli";
         } else {
-          // She pressed "YES" directly without pressing "NO"
           reactionImg.src = yesDirectImgSrc;
           reactionTitle.innerText = "Anty 7ad zo2 w mo7tram";
         }
@@ -238,7 +237,7 @@
       document.getElementById(`step-${stepNumber}`).classList.add('active');
     }
 
-    // Evasive "No" Button with Message Sequence & Picture Swap
+    // Evasive "No" Button
     const noBtn = document.getElementById('no-btn');
     const noWrapper = document.getElementById('no-wrapper');
     const noMsg = document.getElementById('no-msg');
@@ -256,29 +255,23 @@
     let attemptCount = 0;
     let currentX = 0;
     let currentY = 0;
-    let isMoving = false; // Cooldown lock to prevent double triggering
+    let isMoving = false;
 
     function moveNoButton(e) {
       if (e) e.preventDefault(); 
 
-      // Prevent duplicate triggering from overlapping touch/click events
       if (isMoving) return;
       isMoving = true;
       setTimeout(() => { isMoving = false; }, 200);
 
-      // Mark that "NO" was interacted with
       hasPressedNo = true;
-
-      // Swap image to the new photo when interacting with "No"
       memeImg.src = "meme2.jpeg";
 
-      // Display current message from sequence
       if (attemptCount < messages.length) {
         noMsg.style.display = "block";
         noMsg.innerText = messages[attemptCount];
       }
 
-      // Final step: "tab aho" -> Hide button completely
       if (attemptCount === messages.length - 1) {
         setTimeout(() => {
           noBtn.style.display = "none";
@@ -292,27 +285,25 @@
       const containerRect = document.getElementById('btn-container').getBoundingClientRect();
       const wrapperRect = noWrapper.getBoundingClientRect();
 
-      // Safe Padding to keep away from edges
-      const safePadding = 16;
-      const wrapperWidth = wrapperRect.width || 120;
-      const wrapperHeight = wrapperRect.height || 60;
+      // Screen Safety Margins
+      const margin = 12;
+      const wWidth = Math.max(wrapperRect.width, 100);
+      const wHeight = Math.max(wrapperRect.height, 50);
 
-      // Calculate Horizontal Bounds inside Card
-      const minX = - (containerRect.left - cardRect.left) + safePadding + (wrapperWidth / 2);
-      const maxX = (cardRect.right - containerRect.left) - safePadding - (wrapperWidth / 2);
+      // Strict boundaries based on card edges and viewport limits
+      const minX = Math.max(-containerRect.left + margin + (wWidth / 2), -(cardRect.width / 2) + margin + (wWidth / 2));
+      const maxX = Math.min((window.innerWidth - containerRect.left) - margin - (wWidth / 2), (cardRect.width / 2) - margin - (wWidth / 2));
 
-      // Calculate Vertical Bounds ONLY BELOW THE TITLE TEXT
       const titleRect = document.getElementById('main-title').getBoundingClientRect();
-      const minY = Math.max(0, (titleRect.bottom - containerRect.top) + 8); 
-      const maxY = (cardRect.bottom - containerRect.top) - safePadding - wrapperHeight;
+      const minY = Math.max(0, (titleRect.bottom - containerRect.top) + 6); 
+      const maxY = Math.min(window.innerHeight - containerRect.top - wHeight - margin, cardRect.bottom - containerRect.top - wHeight - margin);
 
       let randomX, randomY, distance;
-      const minDistance = 90; // Keeps jumps active and noticeable
-
+      const minDistance = 80;
       let tries = 0;
+
       do {
-        // Pick random position strictly below the title and inside the card bottom half
-        randomX = minX + Math.random() * (maxX - minX) - (containerRect.width / 2);
+        randomX = minX + Math.random() * Math.max(10, maxX - minX);
         randomY = minY + Math.random() * Math.max(10, maxY - minY);
         
         distance = Math.hypot(randomX - currentX, randomY - currentY);
@@ -326,7 +317,6 @@
       noWrapper.style.top = `${randomY}px`;
     }
 
-    // Desktop hover + Mobile tap evasion
     noBtn.addEventListener('mouseenter', moveNoButton);
     noBtn.addEventListener('touchstart', moveNoButton, { passive: false });
     noBtn.addEventListener('click', moveNoButton);
