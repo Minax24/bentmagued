@@ -157,6 +157,7 @@
 
     /* Dedicated slot for original YES button */
     .yes-btn-wrapper {
+      position: relative;
       z-index: 10;
     }
 
@@ -316,11 +317,9 @@
         noMsg.innerText = messages[attemptCount];
       }
 
-      // Final step: "Tab aho" -> Hide NO button but leave message visible and keep YES in place
+      // Final step: "Tab aho" -> Instantly remove the NO button
       if (attemptCount === messages.length - 1) {
-        setTimeout(() => {
-          noBtn.style.display = "none";
-        }, 150);
+        noBtn.style.display = "none"; // Instant disappearance without delay
         return;
       }
 
@@ -354,9 +353,12 @@
       
       // Forces a very large jump on the FIRST move (180px+ away from initial spot)
       const minDistance = (attemptCount === 0) ? 180 : 110;
-      const yesOverlapBuffer = 15; // Extra padding around YES button
       
-      // Strict buffer for special case, normal padding otherwise
+      // Strict safety buffer padding around YES button to enforce strict separation (above, below, left, right)
+      const yesBufferX = 25; 
+      const yesBufferY = 25; 
+      
+      // Buffer for meme image
       const imgOverlapBuffer = isSpecialCase ? 20 : 10; 
 
       let tries = 0;
@@ -390,15 +392,15 @@
         const newAbsRight = newAbsLeft + wrapperWidth;
         const newAbsBottom = newAbsTop + wrapperHeight;
 
-        // Check if the proposed bounding box overlaps with the YES button
+        // Guaranteed spatial separation: No portion of NO wrapper can land inside YES button's zone (+ buffer)
         overlapsYes = !(
-          newAbsRight < (yesRect.left - yesOverlapBuffer) ||
-          newAbsLeft > (yesRect.right + yesOverlapBuffer) ||
-          newAbsBottom < (yesRect.top - yesOverlapBuffer) ||
-          newAbsTop > (yesRect.bottom + yesOverlapBuffer)
+          newAbsRight < (yesRect.left - yesBufferX) ||
+          newAbsLeft > (yesRect.right + yesBufferX) ||
+          newAbsBottom < (yesRect.top - yesBufferY) ||
+          newAbsTop > (yesRect.bottom + yesBufferY)
         );
 
-        // Check if the proposed bounding box overlaps with the Meme Image
+        // Non-overlap check against Meme Image bounding box
         overlapsImage = !(
           newAbsRight < (imgRect.left - imgOverlapBuffer) ||
           newAbsLeft > (imgRect.right + imgOverlapBuffer) ||
@@ -407,7 +409,7 @@
         );
 
         tries++;
-      } while ((distance < minDistance || overlapsYes || overlapsImage) && tries < 100);
+      } while ((distance < minDistance || overlapsYes || overlapsImage) && tries < 200);
 
       currentX = randomX;
       currentY = randomY;
