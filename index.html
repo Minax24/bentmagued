@@ -78,7 +78,7 @@
       to { opacity: 1; transform: scale(1); }
     }
 
-    /* Image Styling */
+    /* Image Styling with Smooth Opacity Transition */
     .question-img {
       width: 100%;
       max-width: 280px;
@@ -87,6 +87,13 @@
       border: 3px solid var(--border-color);
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
       object-fit: cover;
+      transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+      opacity: 1;
+    }
+
+    .question-img.fade-out {
+      opacity: 0;
+      transform: scale(0.95);
     }
 
     /* Typography */
@@ -217,6 +224,25 @@
     const yesDirectImgSrc = "yes_direct.jpeg"; // Image for direct "YES" without pressing "NO"
     const yesAfterNoGifSrc = "yes_gif.gif";   // GIF for "YES" after pressing "NO"
 
+    // Helper function for smooth image source changes
+    function changeImageSmoothly(imgElement, newSrc) {
+      if (imgElement.src.includes(newSrc)) return; // Avoid redundant swaps
+      
+      imgElement.classList.add('fade-out');
+      
+      setTimeout(() => {
+        imgElement.src = newSrc;
+        // Fade back in once the image source is updated
+        imgElement.onload = () => {
+          imgElement.classList.remove('fade-out');
+        };
+        // Fallback in case image is already cached
+        setTimeout(() => {
+          imgElement.classList.remove('fade-out');
+        }, 50);
+      }, 150);
+    }
+
     // Screen Navigation
     function nextStep(stepNumber) {
       if (stepNumber === 2) {
@@ -225,12 +251,12 @@
 
         if (hasPressedNo) {
           // She tried pressing "NO" first
-          reactionImg.src = yesAfterNoGifSrc;
+          changeImageSmoothly(reactionImg, yesAfterNoGifSrc);
           reactionTitle.innerText = "Aiwa kda et3dli";
           reactionTitle.style.fontSize = "1.8rem";
         } else {
           // She pressed "YES" directly without pressing "NO"
-          reactionImg.src = yesDirectImgSrc;
+          changeImageSmoothly(reactionImg, yesDirectImgSrc);
           reactionTitle.innerText = "Anty 7ad zo2 w mo7tram";
           reactionTitle.style.fontSize = "1.35rem";
         }
@@ -275,15 +301,13 @@
       const SPECIAL_CASE_INDEX = 4; // Index of "Anty mosamema ya3ni?"
       const isSpecialCase = attemptCount === SPECIAL_CASE_INDEX;
 
-      // Dynamic Image Swap Logic based on attempt sequence
+      // Dynamic Smooth Image Swap Logic
       if (isSpecialCase) {
-        // Picture associated with "Anty mosamema ya3ni?"
-        memeImg.src = "35994617.jpg";
+        changeImageSmoothly(memeImg, "35994617.jpg");
       } else if (attemptCount >= 5) {
-        // "Tab aho"
-        memeImg.src = "images (6) (2)(1).jpeg";
+        changeImageSmoothly(memeImg, "images (6) (2)(1).jpeg");
       } else {
-        memeImg.src = "meme2.jpeg";
+        changeImageSmoothly(memeImg, "meme2.jpeg");
       }
 
       // Display current message from sequence
@@ -375,7 +399,6 @@
         );
 
         // Check if the proposed bounding box overlaps with the Meme Image
-        // If special case is active, this check will be much stricter
         overlapsImage = !(
           newAbsRight < (imgRect.left - imgOverlapBuffer) ||
           newAbsLeft > (imgRect.right + imgOverlapBuffer) ||
