@@ -247,13 +247,12 @@
 
     const messages = [
       "Ehh al waka7a di",                       // 0
-      "Ya 3abita hagblek shawerma",              // 1
+      "Hagblek shawerma",              // 1
       "Tab bake rolz bl shata?",                // 2
       "Anty alilt al adb w matrbtish",          // 3
-      "Ya3ni fakrty ya3ni?",                         // 4
-      "Tab Fakrii tanyy ahna a3deen 3adi",       // 5
-      "Anty mosamema baa",                     // 6
-      "Tab aho"                                 // 7
+      "Tab ma tfakari tany ahna a3deen aho",       // 4
+      "Anty mosamema ya3ni?",                     // 5
+      "Tab aho"                                 // 6
     ];
 
     let attemptCount = 0;
@@ -273,16 +272,10 @@
       hasPressedNo = true;
 
       // Dynamic Image Swap Logic based on attempt sequence
-      if (attemptCount === 4) {
-        // "Fakrty ya3ni?"
-        memeImg.src = "images (9) (25)(1).jpg";
-      } else if (attemptCount === 5) {
-        // "Tab Fakrii tanyy ahna a3deen 3adi"
+      if (attemptCount === 4 || attemptCount === 5) {
+        // Keeps image during "Tab ma tfakari tany ahna a3deen 3adi" AND "Anty mosamema ya3ni?"
         memeImg.src = "images (9) (26)(1)(1)(1).jpg";
-      } else if (attemptCount === 6) {
-        // "Anty mosamema baa"
-        memeImg.src = "35994617.jpg";
-      } else if (attemptCount >= 7) {
+      } else if (attemptCount >= 6) {
         // "Tab aho"
         memeImg.src = "images (6) (2)(1).jpeg";
       } else {
