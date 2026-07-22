@@ -251,10 +251,9 @@
       "Ehh al waka7a di",                       // 0
       "Hagblek shawerma",                       // 1
       "Tab bake rolz bl shata?",                // 2
-      "Anty alilt el adb w matrbtish",          // 3
-      "Tab ma tfakri tany ma ahna a3deen aho",       // 4
-      "Anty mosamema ya3ni?",                     // 5
-      "Tab aho"                                 // 6
+      "Anty alilt el adab w matrbtish",          // 3
+      "Anty mosamema ya3ni?",                    // 4
+      "Tab aho"                                 // 5
     ];
 
     let attemptCount = 0;
@@ -274,10 +273,10 @@
       hasPressedNo = true;
 
       // Dynamic Image Swap Logic based on attempt sequence
-      if (attemptCount === 4 || attemptCount === 5) {
-        // Keeps image during "Tab fakri tany ma ahna a3deen aho" AND "Anty mosamema ya3ni?"
-        memeImg.src = "images (9) (26)(1)(1)(1).jpg";
-      } else if (attemptCount >= 6) {
+      if (attemptCount === 4) {
+        // Picture for "Anty mosamema ya3ni?"
+        memeImg.src = "35994617.jpg";
+      } else if (attemptCount >= 5) {
         // "Tab aho"
         memeImg.src = "images (6) (2)(1).jpeg";
       } else {
@@ -301,6 +300,7 @@
       const cardRect = document.getElementById('main-card').getBoundingClientRect();
       const containerRect = document.getElementById('btn-container').getBoundingClientRect();
       const yesRect = yesWrapper.getBoundingClientRect();
+      const imgRect = memeImg.getBoundingClientRect();
       
       // Store initial CSS offsets relative to btn-container before first movement
       if (currentX === null || currentY === null) {
@@ -323,11 +323,12 @@
       const minY = - (containerRect.top - cardRect.top) + margin;
       const maxY = (cardRect.bottom - containerRect.top) - margin - wrapperHeight;
 
-      let randomX, randomY, distance, overlapsYes;
+      let randomX, randomY, distance, overlapsYes, overlapsImage;
       
       // Forces a very large jump on the FIRST move (180px+ away from initial spot)
       const minDistance = (attemptCount === 0) ? 180 : 110;
       const yesOverlapBuffer = 15; // Extra padding around YES button
+      const imgOverlapBuffer = 10; // Padding around picture to prevent overlapping it
 
       let tries = 0;
       do {
@@ -354,12 +355,13 @@
         // Check distance from current location
         distance = Math.hypot(randomX - currentX, randomY - currentY);
 
-        // Check if the proposed bounding box overlaps with the YES button
+        // Calculate absolute position for bounding box checks
         const newAbsLeft = containerRect.left + randomX;
         const newAbsTop = containerRect.top + randomY;
         const newAbsRight = newAbsLeft + wrapperWidth;
         const newAbsBottom = newAbsTop + wrapperHeight;
 
+        // Check if the proposed bounding box overlaps with the YES button
         overlapsYes = !(
           newAbsRight < (yesRect.left - yesOverlapBuffer) ||
           newAbsLeft > (yesRect.right + yesOverlapBuffer) ||
@@ -367,8 +369,16 @@
           newAbsTop > (yesRect.bottom + yesOverlapBuffer)
         );
 
+        // Check if the proposed bounding box overlaps with the Meme Image
+        overlapsImage = !(
+          newAbsRight < (imgRect.left - imgOverlapBuffer) ||
+          newAbsLeft > (imgRect.right + imgOverlapBuffer) ||
+          newAbsBottom < (imgRect.top - imgOverlapBuffer) ||
+          newAbsTop > (imgRect.bottom + imgOverlapBuffer)
+        );
+
         tries++;
-      } while ((distance < minDistance || overlapsYes) && tries < 50);
+      } while ((distance < minDistance || overlapsYes || overlapsImage) && tries < 50);
 
       currentX = randomX;
       currentY = randomY;
