@@ -145,10 +145,10 @@
       position: relative;
       margin-top: 16px;
       min-height: 80px;
-      padding-left: 15%; /* Keeps YES button anchored neatly on the left side */
+      padding-left: 15%; /* Keeps original YES button anchored neatly on the left side */
     }
 
-    /* Dedicated slot for YES button so it never shifts */
+    /* Dedicated slot for original YES button */
     .yes-btn-wrapper {
       z-index: 10;
     }
@@ -165,17 +165,17 @@
       z-index: 20;
     }
 
-    /* Clear, readable message styling with forced single line */
+    /* Popup message styling */
     .no-message {
       font-size: 0.85rem;
       font-weight: 800;
-      color: #000000;
+      color: #ffffff;
       margin-top: 6px;
-      white-space: nowrap; /* Keeps sentence strictly on 1 line */
-      background: rgba(255, 255, 255, 0.95);
-      padding: 4px 12px;
+      white-space: nowrap;
+      background-color: var(--primary-pink);
+      padding: 6px 14px;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px rgba(255, 77, 141, 0.3);
       pointer-events: none;
       display: none;
     }
@@ -191,7 +191,7 @@
       <h1 id="main-title">Eh ra2iek nenzl al weekend da ?</h1>
       
       <div class="btn-group" id="btn-container">
-        <div class="yes-btn-wrapper">
+        <div class="yes-btn-wrapper" id="yes-wrapper">
           <button class="btn" id="yes-btn" onclick="nextStep(2)">YES ♥</button>
         </div>
         
@@ -241,21 +241,22 @@
     // Evasive "No" Button with Message Sequence & Picture Swap
     const noBtn = document.getElementById('no-btn');
     const noWrapper = document.getElementById('no-wrapper');
+    const yesWrapper = document.getElementById('yes-wrapper');
     const noMsg = document.getElementById('no-msg');
     const memeImg = document.getElementById('meme-img');
 
     const messages = [
       "Ehh al waka7a di",
-      "Hagblek shawerma",
       "Anty alilt al adb w matrbtish",
+      "Tab hagblek shawerma",
       "Tab bake rolz bl shata?",
-      "Anty mosamema brdo?",
+      "Anty mosamema ya3ni?",
       "Tab aho"
     ];
 
     let attemptCount = 0;
-    let currentX = 0;
-    let currentY = 0;
+    let currentX = null;
+    let currentY = null;
     let isMoving = false; // Cooldown lock to prevent double triggering
 
     function moveNoButton(e) {
@@ -278,19 +279,41 @@
         noMsg.innerText = messages[attemptCount];
       }
 
-      // Final step: "tab aho" -> Hide button completely
+      // Final step: "Tab aho" -> Keep message in current position, remove NO button, spawn new YES in initial spot
       if (attemptCount === messages.length - 1) {
         setTimeout(() => {
+          // Hide the original No button
           noBtn.style.display = "none";
+
+          // Create a new YES button at the initial slot of the No button
+          const secondYesWrapper = document.createElement('div');
+          secondYesWrapper.className = 'yes-btn-wrapper';
+          secondYesWrapper.style.position = 'absolute';
+          secondYesWrapper.style.left = 'calc(50% + 20px)';
+          secondYesWrapper.style.top = '0';
+
+          const secondYesBtn = document.createElement('button');
+          secondYesBtn.className = 'btn';
+          secondYesBtn.innerText = 'YES ♥';
+          secondYesBtn.onclick = () => nextStep(2);
+
+          secondYesWrapper.appendChild(secondYesBtn);
+          document.getElementById('btn-container').appendChild(secondYesWrapper);
         }, 150);
         return;
       }
 
-      attemptCount++;
-
       const cardRect = document.getElementById('main-card').getBoundingClientRect();
       const containerRect = document.getElementById('btn-container').getBoundingClientRect();
+      const yesRect = yesWrapper.getBoundingClientRect();
       
+      // Store initial CSS offsets relative to btn-container before first movement
+      if (currentX === null || currentY === null) {
+        const wrapperRectInitial = noWrapper.getBoundingClientRect();
+        currentX = wrapperRectInitial.left - containerRect.left;
+        currentY = wrapperRectInitial.top - containerRect.top;
+      }
+
       // Get full wrapper size including the single-line message
       const wrapperRect = noWrapper.getBoundingClientRect();
 
@@ -298,15 +321,18 @@
       const wrapperWidth = wrapperRect.width || 120;
       const wrapperHeight = wrapperRect.height || 60;
 
-      // Unlocks UP, DOWN, LEFT, RIGHT range within the entire card area
+      // Movement ranges across the card area
       const minX = - (containerRect.left - cardRect.left) + margin;
       const maxX = (cardRect.right - containerRect.left) - margin - wrapperWidth;
 
       const minY = - (containerRect.top - cardRect.top) + margin;
       const maxY = (cardRect.bottom - containerRect.top) - margin - wrapperHeight;
 
-      let randomX, randomY, distance;
-      const minDistance = 110; // Ensures wide jumps in all directions
+      let randomX, randomY, distance, overlapsYes;
+      
+      // Forces a very large jump on the FIRST move (180px+ away from initial spot)
+      const minDistance = (attemptCount === 0) ? 180 : 110;
+      const yesOverlapBuffer = 15; // Extra padding around YES button
 
       let tries = 0;
       do {
@@ -330,12 +356,28 @@
           randomY -= ((absTop + wrapperHeight) - (window.innerHeight - margin));
         }
 
+        // Check distance from current location
         distance = Math.hypot(randomX - currentX, randomY - currentY);
+
+        // Check if the proposed bounding box overlaps with the YES button
+        const newAbsLeft = containerRect.left + randomX;
+        const newAbsTop = containerRect.top + randomY;
+        const newAbsRight = newAbsLeft + wrapperWidth;
+        const newAbsBottom = newAbsTop + wrapperHeight;
+
+        overlapsYes = !(
+          newAbsRight < (yesRect.left - yesOverlapBuffer) ||
+          newAbsLeft > (yesRect.right + yesOverlapBuffer) ||
+          newAbsBottom < (yesRect.top - yesOverlapBuffer) ||
+          newAbsTop > (yesRect.bottom + yesOverlapBuffer)
+        );
+
         tries++;
-      } while (distance < minDistance && tries < 25);
+      } while ((distance < minDistance || overlapsYes) && tries < 50);
 
       currentX = randomX;
       currentY = randomY;
+      attemptCount++;
 
       noWrapper.style.left = `${randomX}px`;
       noWrapper.style.top = `${randomY}px`;
