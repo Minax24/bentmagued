@@ -165,13 +165,13 @@
       z-index: 20;
     }
 
-    /* Clear, readable message styling with black text */
+    /* Clear, readable message styling with forced single line */
     .no-message {
       font-size: 0.85rem;
       font-weight: 800;
       color: #000000;
       margin-top: 6px;
-      white-space: nowrap;
+      white-space: nowrap; /* Keeps sentence strictly on 1 line */
       background: rgba(255, 255, 255, 0.95);
       padding: 4px 12px;
       border-radius: 12px;
@@ -188,7 +188,7 @@
     <!-- STEP 1: Main Question -->
     <div class="screen active" id="step-1">
       <img src="meme.jpeg" alt="Meme" class="question-img" id="meme-img">
-      <h1>Eh ra2iek nenzl al weekend da ?</h1>
+      <h1 id="main-title">Eh ra2iek nenzl al weekend da ?</h1>
       
       <div class="btn-group" id="btn-container">
         <div class="yes-btn-wrapper">
@@ -289,32 +289,55 @@
       attemptCount++;
 
       const cardRect = document.getElementById('main-card').getBoundingClientRect();
+      const containerRect = document.getElementById('btn-container').getBoundingClientRect();
+      
+      // Get full wrapper size including the single-line message
       const wrapperRect = noWrapper.getBoundingClientRect();
 
-      // Safe margins so the button and text stay safely inside the card borders
-      const safePadding = 20; 
+      const margin = 12; // Safety margin around screen edges
       const wrapperWidth = wrapperRect.width || 120;
       const wrapperHeight = wrapperRect.height || 60;
 
-      const maxX = Math.max((cardRect.width / 2) - (wrapperWidth / 2) - safePadding, 20);
-      const maxY = Math.max((cardRect.height / 2) - (wrapperHeight / 2) - safePadding, 20);
+      // Unlocks UP, DOWN, LEFT, RIGHT range within the entire card area
+      const minX = - (containerRect.left - cardRect.left) + margin;
+      const maxX = (cardRect.right - containerRect.left) - margin - wrapperWidth;
+
+      const minY = - (containerRect.top - cardRect.top) + margin;
+      const maxY = (cardRect.bottom - containerRect.top) - margin - wrapperHeight;
 
       let randomX, randomY, distance;
-      const minDistance = 110; // Ensures it jumps far away from the old spot
+      const minDistance = 110; // Ensures wide jumps in all directions
 
-      // Keep picking coordinates inside the safe area until it moves far enough
       let tries = 0;
       do {
-        randomX = (Math.random() - 0.5) * maxX * 2;
-        randomY = (Math.random() - 0.5) * maxY * 2;
+        // Pick random position across full card canvas
+        randomX = minX + Math.random() * Math.max(10, maxX - minX);
+        randomY = minY + Math.random() * Math.max(10, maxY - minY);
+
+        // Precise boundary clamping against device screen edges to prevent cropping
+        const absLeft = containerRect.left + randomX;
+        const absTop = containerRect.top + randomY;
+
+        if (absLeft < margin) {
+          randomX += (margin - absLeft);
+        } else if (absLeft + wrapperWidth > window.innerWidth - margin) {
+          randomX -= ((absLeft + wrapperWidth) - (window.innerWidth - margin));
+        }
+
+        if (absTop < margin) {
+          randomY += (margin - absTop);
+        } else if (absTop + wrapperHeight > window.innerHeight - margin) {
+          randomY -= ((absTop + wrapperHeight) - (window.innerHeight - margin));
+        }
+
         distance = Math.hypot(randomX - currentX, randomY - currentY);
         tries++;
-      } while (distance < minDistance && tries < 20);
+      } while (distance < minDistance && tries < 25);
 
       currentX = randomX;
       currentY = randomY;
 
-      noWrapper.style.left = `calc(50% + ${randomX}px)`;
+      noWrapper.style.left = `${randomX}px`;
       noWrapper.style.top = `${randomY}px`;
     }
 
