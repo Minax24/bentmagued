@@ -47,10 +47,10 @@
       border: 3px solid var(--border-color);
       text-align: center;
       position: relative;
-      min-height: 400px;
+      min-height: 480px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       animation: floatSway 4s ease-in-out infinite;
     }
@@ -81,7 +81,7 @@
     /* Image Styling */
     .question-img {
       width: 100%;
-      max-width: 280px;
+      max-width: 250px;
       border-radius: 20px;
       margin-bottom: 16px;
       border: 3px solid var(--border-color);
@@ -91,9 +91,9 @@
 
     /* Typography */
     h1 {
-      font-size: 1.8rem;
+      font-size: 1.7rem;
       font-weight: 900;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       color: var(--text-dark);
       line-height: 1.25;
       letter-spacing: -0.5px;
@@ -139,13 +139,18 @@
     /* Side-by-side Button Container */
     .btn-group {
       display: flex;
-      gap: 20px;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       width: 100%;
       position: relative;
-      margin-top: 16px;
-      min-height: 80px;
+      margin-top: 12px;
+      min-height: 120px;
+    }
+
+    /* Dedicated slot for YES button so it stays in place */
+    .yes-btn-wrapper {
+      z-index: 10;
+      margin-right: 120px; /* Leaves space for NO button initially */
     }
 
     /* Wrapper for "No" Button + dynamic message below it */
@@ -153,6 +158,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: absolute;
+      left: calc(50% + 10px);
+      top: 0;
       transition: top 0.15s ease, left 0.15s ease;
       z-index: 20;
     }
@@ -180,10 +188,12 @@
     <!-- STEP 1: Main Question -->
     <div class="screen active" id="step-1">
       <img src="meme.jpeg" alt="Meme" class="question-img" id="meme-img">
-      <h1>Eh ra2iek nenzl al weekend da ?</h1>
+      <h1 id="main-title">Eh ra2iek nenzl al weekend da ?</h1>
       
       <div class="btn-group" id="btn-container">
-        <button class="btn" id="yes-btn" onclick="nextStep(2)">YES ♥</button>
+        <div class="yes-btn-wrapper">
+          <button class="btn" id="yes-btn" onclick="nextStep(2)">YES ♥</button>
+        </div>
         
         <div class="no-btn-wrapper" id="no-wrapper">
           <button class="btn btn-secondary" id="no-btn">no ✨</button>
@@ -236,9 +246,9 @@
 
     const messages = [
       "Ehh al waka7a di",
-      "Anty alilt al adb w matrbtish",
       "Hagblek shawerma",
-      "Tab bake rolz bl shata ?",
+      "Anty alilt al adb w matrbtish",
+      "Tab bake rolz bl shata?",
       "Anty mosamema brdo?",
       "Tab aho"
     ];
@@ -278,23 +288,33 @@
 
       attemptCount++;
 
-      // Switch to absolute positioning to jump around
-      if (noWrapper.style.position !== 'absolute') {
-        noWrapper.style.position = 'absolute';
-      }
-
       const cardRect = document.getElementById('main-card').getBoundingClientRect();
-      const maxX = (cardRect.width / 2) - 80;
-      const maxY = (cardRect.height / 2) - 60;
+      const containerRect = document.getElementById('btn-container').getBoundingClientRect();
+      const wrapperRect = noWrapper.getBoundingClientRect();
+
+      // Safe Padding to keep away from edges
+      const safePadding = 16;
+      const wrapperWidth = wrapperRect.width || 120;
+      const wrapperHeight = wrapperRect.height || 60;
+
+      // Calculate Horizontal Bounds inside Card
+      const minX = - (containerRect.left - cardRect.left) + safePadding + (wrapperWidth / 2);
+      const maxX = (cardRect.right - containerRect.left) - safePadding - (wrapperWidth / 2);
+
+      // Calculate Vertical Bounds ONLY BELOW THE TITLE TEXT
+      const titleRect = document.getElementById('main-title').getBoundingClientRect();
+      const minY = Math.max(0, (titleRect.bottom - containerRect.top) + 8); 
+      const maxY = (cardRect.bottom - containerRect.top) - safePadding - wrapperHeight;
 
       let randomX, randomY, distance;
-      const minDistance = 140; // Ensures it jumps far away from the old spot
+      const minDistance = 90; // Keeps jumps active and noticeable
 
-      // Keep picking coordinates until it moves far enough from the previous spot
       let tries = 0;
       do {
-        randomX = (Math.random() - 0.5) * maxX * 2;
-        randomY = (Math.random() - 0.5) * maxY * 2;
+        // Pick random position strictly below the title and inside the card bottom half
+        randomX = minX + Math.random() * (maxX - minX) - (containerRect.width / 2);
+        randomY = minY + Math.random() * Math.max(10, maxY - minY);
+        
         distance = Math.hypot(randomX - currentX, randomY - currentY);
         tries++;
       } while (distance < minDistance && tries < 20);
@@ -302,7 +322,7 @@
       currentX = randomX;
       currentY = randomY;
 
-      noWrapper.style.left = `${randomX}px`;
+      noWrapper.style.left = `calc(50% + ${randomX}px)`;
       noWrapper.style.top = `${randomY}px`;
     }
 
