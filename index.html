@@ -252,7 +252,7 @@
       "Hagblek shawerma",                       // 1
       "Tab bake rolz bl shata?",                // 2
       "Anty alilt el adab w matrbtish",          // 3
-      "Anty mosamema ya3ni?",                    // 4
+      "Anty mosamema ya3ni?",                    // 4 (Special Case Index)
       "Tab aho"                                 // 5
     ];
 
@@ -272,9 +272,12 @@
       // Mark that "NO" was interacted with
       hasPressedNo = true;
 
+      const SPECIAL_CASE_INDEX = 4; // Index of "Anty mosamema ya3ni?"
+      const isSpecialCase = attemptCount === SPECIAL_CASE_INDEX;
+
       // Dynamic Image Swap Logic based on attempt sequence
-      if (attemptCount === 4) {
-        // Picture for "Anty mosamema ya3ni?"
+      if (isSpecialCase) {
+        // Picture associated with "Anty mosamema ya3ni?"
         memeImg.src = "35994617.jpg";
       } else if (attemptCount >= 5) {
         // "Tab aho"
@@ -328,7 +331,9 @@
       // Forces a very large jump on the FIRST move (180px+ away from initial spot)
       const minDistance = (attemptCount === 0) ? 180 : 110;
       const yesOverlapBuffer = 15; // Extra padding around YES button
-      const imgOverlapBuffer = 10; // Padding around picture to prevent overlapping it
+      
+      // Strict buffer for special case, normal padding otherwise
+      const imgOverlapBuffer = isSpecialCase ? 20 : 10; 
 
       let tries = 0;
       do {
@@ -370,6 +375,7 @@
         );
 
         // Check if the proposed bounding box overlaps with the Meme Image
+        // If special case is active, this check will be much stricter
         overlapsImage = !(
           newAbsRight < (imgRect.left - imgOverlapBuffer) ||
           newAbsLeft > (imgRect.right + imgOverlapBuffer) ||
@@ -378,7 +384,7 @@
         );
 
         tries++;
-      } while ((distance < minDistance || overlapsYes || overlapsImage) && tries < 50);
+      } while ((distance < minDistance || overlapsYes || overlapsImage) && tries < 100);
 
       currentX = randomX;
       currentY = randomY;
